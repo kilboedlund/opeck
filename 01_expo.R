@@ -149,12 +149,14 @@ options(scipen = 999)
 
 p01_01 <- opeck_e3 %>% 
   pivot_longer(cols = -opeck_id, names_to = 'expo', values_to = 'eu_years') %>% 
-  ggplot(aes(x = eu_years, fill = expo)) +
-  geom_histogram(binwidth = 10) +
+  ggplot(aes(x = eu_years+1, fill = expo)) +
+  geom_histogram(binwidth = 1) +
   scale_y_continuous(expand = c(0,0), 
                      trans = 'log', 
                      breaks = 10^(0:5), 
                      limits = c(1, 500000)) +
+  scale_x_continuous(trans = 'log',
+                     breaks = 10^(0:2)) +
   facet_wrap(vars(expo)) +
   labs(x = 'EU-years', y = 'Count (participants)') +
   theme_bw() +
