@@ -141,4 +141,4 @@ p03_00 <- opeck_res_a1 %>%
     axis.text.y = element_text(),
     legend.position = 'null'
   )
-ggsave(here::here('outputs', 'plots', 'p03_00.svg'), p03_00, width = 10, height = 6)
+ggsave(filename = 'opeck/outputs/plots/p03_00.svg', p03_00, width = 10, height = 6)
