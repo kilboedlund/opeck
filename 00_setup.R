@@ -7,6 +7,8 @@ install.packages('survival')
 install.packages('kidney.epi')
 install.packages('here')
 install.packages('svglite')
+install.packages('rms')
 
 library('tidyverse')
 library('survival')
+library('rms')

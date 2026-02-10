@@ -1,30 +1,66 @@
 opeck_o1 <- read_csv('data.csv', 
-                     col_types = paste0(rep('c', 208), 
+                     col_types = paste0(rep('c', 210), 
                                         collapse = '')) %>% 
   mutate(opeck_id = seq(nrow(.))) %>% 
   filter(!is.na(p22599)) %>% 
   select(opeck_id,
          sex = p31,
-         age = p21022,
+         age = p21022, #p21003,
          yob = p34,
-         esrd = p42026,
+         date_enrol = p53_i0,
+         date_death = p40000_i0,
+         date_lofup = p191,
+         eskd = p42026,
+         eskd_source = p42027,
          n03 = p132004,
+         n07 = p132012,
+         n18 = p132032,
+         n18_source = p132033,
          crea = p30700_i0,
          cys = p30720_i0,
          ualb = p30500_i0,
          ucre = p30510_i0,
-         n07 = p132012,
          smo = p20116_i0,
          bmi = p21001_i0,
          alc = p1558_i0,
          dep = p22189,
          eth = p21000_i0,
-         qua = p6138_i0,
+         #qua = 0,
          inc = p738_i0) %>% 
-  mutate(across(c(sex, age, yob), as.integer),
-         across(c(esrd, n03, n07), \(x) as.Date.character(x, format =  '%Y-%m-%d')),
+  mutate(
+    qua = '0',
+    across(
+      c(smo, alc, eth, inc),
+      \(x) na_if(x, '-3')),
+    across(
+      c(eth, inc),
+      \(x) na_if(x, '-1')),
+    eth = str_sub(eth, -2, -1), 
+    ) %>% 
+  mutate(across(c(sex, age, yob, qua), as.integer),
+         across(c(date_enrol, date_death, date_lofup, eskd, n03, n07, n18), 
+                \(x) as.Date.character(x, format =  '%Y-%m-%d')),
          across(c(crea, cys, ualb, ucre, bmi, dep), as.double),
-         across(c(smo, alc, eth, qua, inc), as.factor))
+         across(c(smo, alc, eth, inc, n18_source, eskd_source), as.factor)) %>% 
+  mutate(n18_source = n18_source %>% 
+           factor(level = c(20, 21, 30, 31, 40, 41, 50, 51),
+                  label = c('Death register only', 
+                            'Death register and other source(s)', 
+                            'Primary care only', 
+                            'Primary care and other source(s)', 
+                            'Hospital admissions data only',
+                            'Hospital admissions data and other source(s)',
+                            'Self-report only',
+                            'Self-report and other source(s)')),
+         eskd_source = eskd_source %>% 
+           factor(level = c(0, 1, 2, 11, 12, 21, 22),
+                  label = c('Self-reported only', 
+                            'Hospital admission', 
+                            'Death only', 
+                            'Hospital primary', 
+                            'Death primary',
+                            'Hospital secondary',
+                            'Death contributory')))
 
 opeck_o2 <- opeck_o1 %>% 
   mutate(uacr = ualb / (ucre / 1000),
