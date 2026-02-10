@@ -6,3 +6,5 @@ opeck <- left_join(
   opeck_e3,
   by = 'opeck_id'
 )
+
+# LONGITUDINAL ANALYSES
