@@ -90,7 +90,7 @@ fit_a1_m4 <- map(
                       ' + rcs(age, 3) + sex + year_enrol',
                       ' + smo + rcs(bmi,3) + alc',
                       ' + dep + eth + rcs(qua,3) + inc',
-                      ' + ldl + hba1c + dia + hpt')),
+                      ' + ldl + gly + dia + hpt')),
     data = opeck_a1
   )
 )

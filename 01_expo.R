@@ -6,6 +6,7 @@ opeck_e1 <- read_csv('data.csv',
   select(opeck_id,
          p22599, 
          p22661,
+         p53_i0,
          contains('p22601'), 
          contains('p22602'), 
          contains('p22603'),
@@ -13,7 +14,8 @@ opeck_e1 <- read_csv('data.csv',
          contains('p22664'))
 
 opeck_e2 <- opeck_e1 %>% 
-  pivot_longer(-c(opeck_id, p22599, p22661), 
+  mutate(p53_i0 = str_sub(p53_i0, 1, 4) %>% as.integer) %>% 
+  pivot_longer(-c(opeck_id, p53_i0, p22599, p22661), 
                names_pattern = '(.*)_(.*)', 
                names_to = c('var', 'no'), 
                values_to = 'value') %>% 
@@ -25,14 +27,17 @@ opeck_e2 <- opeck_e1 %>%
                           'p20121' ~ 'cascot', 
                           'p22663' ~ 'y_start', 
                           'p22664' ~ 'y_end')) %>% 
-  pivot_wider(id_cols = c(opeck_id, p22599, p22661, no, class), 
+  pivot_wider(id_cols = c(opeck_id, p53_i0, p22599, p22661, no, class), 
               names_from = var, 
               values_from = 'value') %>% 
   filter(!is.na(y_start)) %>% 
   mutate(across(c(job_code, y_start, y_end), as.integer), 
          job_gr = str_sub(job_code, 1, 4),
          y_end = if_else(y_end == -313, 
-                         true = 2016, 
+                         true = p53_i0 - 1, 
+                         false = y_end),
+         y_end = if_else(y_end >= p53_i0,
+                         true = p53_i0 - 1,
                          false = y_end),
          duration = y_end - y_start)
 
@@ -139,7 +144,7 @@ opeck_e3 <- opeck_e2 %>%
   group_by(opeck_id) %>% 
   summarise(across(c(vapo, gas, dust, dust_bio, dust_min, fume, dies, fibr, mist, 
                      asth, meta, gasf, vgdf, vgdffm),
-                   ~ sum(.x * duration)))
+                   ~ sum(.x * duration) * .1))
 
 rm(opeck_e1, opeck_e2)
 rm(ace_jem_b, ace_jem_l, ace_jem_p)
