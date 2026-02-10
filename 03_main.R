@@ -1,5 +1,5 @@
-source('01_expo.R')
-source('02_outc.R')
+source(here::here('opeck','01_expo.R'))
+source(here::here('opeck','02_outc.R'))
 
 opeck <- left_join(
   opeck_o2,
@@ -7,4 +7,9 @@ opeck <- left_join(
   by = 'opeck_id'
 )
 
-# LONGITUDINAL ANALYSES
+# 03_00 LONGITUDINAL ANALYSES --------------------------------------------------
+surv
+
+fit_00_00 <- coxph(
+  
+)

@@ -1,7 +1,3 @@
-install.packages('tidyverse')
-install.packages('readxl')
-library('tidyverse')
-
 opeck_e1 <- read_csv('data.csv', 
                      col_types = paste0(rep('c', 208), 
                                         collapse = '')) %>% 
@@ -144,6 +140,9 @@ opeck_e3 <- opeck_e2 %>%
   summarise(across(c(vapo, gas, dust, dust_bio, dust_min, fume, dies, fibr, mist, 
                      asth, meta, gasf, vgdf, vgdffm),
                    ~ sum(.x * duration)))
+
+rm(opeck_e1, opeck_e2)
+rm(ace_jem_b, ace_jem_l, ace_jem_p)
 
 options(scipen = 999)
 

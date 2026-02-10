@@ -1,7 +1,3 @@
-install.packages('tidyverse')
-install.packages('kidney.epi')
-library('tidyverse')
-
 opeck_o1 <- read_csv('data.csv', 
                      col_types = paste0(rep('c', 208), 
                                         collapse = '')) %>% 
@@ -44,3 +40,4 @@ opeck_o2 <- opeck_o1 %>%
            max_age = 100
          ))
 
+rm(opeck_o1)

@@ -5,6 +5,8 @@ install.packages('readxl')
 install.packages('writexl')
 install.packages('survival')
 install.packages('kidney.epi')
+install.packages('here')
+install.packages('svglite')
 
 library('tidyverse')
 library('survival')
