@@ -95,4 +95,50 @@ fit_a1_m4 <- map(
   )
 )
 
+opeck_res_a1 <- 
+  map2(
+    list(
+      map(fit_a1_m0, broom::tidy) %>% bind_rows,
+      map(fit_a1_m1, broom::tidy) %>% bind_rows,
+      map(fit_a1_m2, broom::tidy) %>% bind_rows
+    ),
+    1:3,
+    \(x, y) bind_rows(x) %>% 
+      mutate(model = y) %>% 
+      filter(term %in% expo)
+  ) %>% 
+  bind_rows()
 
+p03_00 <- opeck_res_a1 %>%  
+  mutate(
+    model = factor(model),
+    term  = factor(term),
+    term_id = as.numeric(term)
+  ) %>% 
+  ggplot(aes(x = term,
+             group = model,
+             y = exp(estimate), 
+             ymin = exp(estimate - 1.96*std.error), 
+             ymax = exp(estimate + 1.96*std.error),
+             colour = model)) +
+  geom_rect(
+    aes(
+      xmin = term_id - 0.45,
+      xmax = term_id + 0.45,
+      ymin = 0.95,
+      ymax = 1.25,
+      fill = term
+    ),
+    inherit.aes = FALSE,
+    alpha = 0.05
+  ) +
+  geom_hline(aes(yintercept = 1), colour = 'white', size = 2) +
+  geom_point(position = position_dodge(.5)) +
+  geom_errorbar(position = position_dodge(.5), width = .25) +
+  scale_y_continuous(trans = 'log')+ 
+  theme_void() +
+  theme(
+    axis.text.y = element_text(),
+    legend.position = 'null'
+  )
+ggsave(here::here('outputs', 'plots', 'p03_00.svg'), p03_00, width = 10, height = 6)
