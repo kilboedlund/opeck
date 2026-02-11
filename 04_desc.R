@@ -64,4 +64,4 @@ table1a <- left_join(
   pivot_longer(-rowname) %>%
   pivot_wider(names_from = rowname)
 
-table1a
+writexl::write_xlsx(table1a, path = 'opeck/outputs/table1a.xlsx')
