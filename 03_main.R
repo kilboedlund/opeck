@@ -12,7 +12,8 @@ expo <- c("vapo",
           "mist",
           "asth",
           "meta",
-          "gasf", "vgdf", 
+          "gasf", 
+          "vgdf", 
           "vgdffm")
 
 # 03_00 LONGITUDINAL ANALYSES --------------------------------------------------
@@ -78,7 +79,7 @@ fit_a1_m3 <- map(
                       x, 
                       ' + rcs(age, 3) + sex + year_enrol',
                       ' + smo + rcs(bmi,3) + alc',
-                      ' + dep + eth + rcs(qua,3) + inc')),
+                      ' + rcs(dep,3) + eth + rcs(qua,3) + inc')),
     data = opeck_a1
   )
 )
@@ -90,8 +91,8 @@ fit_a1_m4 <- map(
                       x, 
                       ' + rcs(age, 3) + sex + year_enrol',
                       ' + smo + rcs(bmi,3) + alc',
-                      ' + dep + eth + rcs(qua,3) + inc',
-                      ' + ldl + gly + dia + hpt')),
+                      ' + rcs(dep,3) + eth + rcs(qua,3) + inc',
+                      ' + rcs(ldl,3) + rcs(gly,3) + dia + hpt')),
     data = opeck_a1
   )
 )
@@ -101,45 +102,68 @@ opeck_res_a1 <-
     list(
       map(fit_a1_m0, broom::tidy) %>% bind_rows,
       map(fit_a1_m1, broom::tidy) %>% bind_rows,
-      map(fit_a1_m2, broom::tidy) %>% bind_rows
+      map(fit_a1_m2, broom::tidy) %>% bind_rows,
+      map(fit_a1_m3, broom::tidy) %>% bind_rows,
+      map(fit_a1_m4, broom::tidy) %>% bind_rows
     ),
-    1:3,
+    0:4,
     \(x, y) bind_rows(x) %>% 
       mutate(model = y) %>% 
       filter(term %in% expo)
   ) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  mutate(term_f = case_match(term,
+                             'asth' ~ 'Asthmagens',
+                             'dies' ~ 'Diesel exhaust',
+                             'dust' ~ 'Dusts',
+                             'dust_bio' ~ 'Biological dusts',
+                             'dust_min' ~ 'Mineral dusts',
+                             'fibr' ~ 'Fibres',
+                             'fume' ~ 'Fumes',
+                             'gas' ~ 'Gasses',
+                             'gasf' ~ 'Gasses and fumes',
+                             'meta' ~ 'Metals',
+                             'mist' ~ 'Mists',
+                             'vapo' ~ 'Vapours',
+                             'vgdf' ~ 'VGDF',
+                             'vgdffm' ~ 'VGDFFM'))
 
-p03_00 <- opeck_res_a1 %>%  
+opeck_res_a1 %>%  
+  filter(!term %in% c('asth', 'gasf')) %>% 
   mutate(
-    model = factor(model),
-    term  = factor(term),
+    model = factor(model) %>% fct_rev(),
+    term  = factor(term) %>% fct_rev(),
     term_id = as.numeric(term)
   ) %>% 
-  ggplot(aes(x = term,
+  ggplot(aes(y = term,
              group = model,
-             y = exp(estimate), 
-             ymin = exp(estimate - 1.96*std.error), 
-             ymax = exp(estimate + 1.96*std.error),
+             x = exp(estimate), 
+             xmin = exp(estimate - 1.96*std.error), 
+             xmax = exp(estimate + 1.96*std.error),
              colour = model)) +
   geom_rect(
     aes(
-      xmin = term_id - 0.45,
-      xmax = term_id + 0.45,
-      ymin = 0.95,
-      ymax = 1.25,
-      fill = term
+      ymin = term_id - 0.44,
+      ymax = term_id + 0.44,
+      xmin = 0.95,
+      xmax = 1.22
     ),
+    fill = 'lightgrey',
     inherit.aes = FALSE,
     alpha = 0.05
   ) +
-  geom_hline(aes(yintercept = 1), colour = 'white', size = 2) +
-  geom_point(position = position_dodge(.5)) +
-  geom_errorbar(position = position_dodge(.5), width = .25) +
-  scale_y_continuous(trans = 'log')+ 
+  geom_text(aes(y = term, x = 0.9475, label = term_f), hjust = 1, colour = 'black') +
+  geom_vline(aes(xintercept = 1), colour = 'white', size = 2) +
+  geom_point(aes(shape = model), position = position_dodge(.8)) +
+  geom_errorbar(orientation = 'y', position = position_dodge(.8), width = .5) +
+  scale_x_continuous(trans = 'log', breaks = c(.95, 1, 1.05, 1.1, 1.15, 1.2)) +
+  scale_colour_grey(start = .1, end = .7, breaks = 0:4) + 
+  scale_shape_manual(values = 15:19, breaks = 0:4) +
+  coord_cartesian(xlim = c(.9, 1.21)) +
+  labs(shape = 'Model', colour = 'Model') +
   theme_void() +
   theme(
-    axis.text.y = element_text(),
-    legend.position = 'null'
+    axis.text.x = element_text(),
+    legend.position = 'bottom'
   )
 ggsave(filename = 'opeck/outputs/plots/p03_00.svg', p03_00, width = 10, height = 6)

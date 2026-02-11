@@ -50,7 +50,7 @@ opeck_o1 <- read_csv('data.csv',
   mutate(across(c(sex, age, yob, qua), as.integer),
          across(c(date_enrol, date_death, date_lofup, eskd, n03, n07, n18, e10, e11, e12, e13, e14, i10), 
                 \(x) as.Date.character(x, format =  '%Y-%m-%d')),
-         across(c(crea, cys, ualb, ucre, bmi, dep), as.double),
+         across(c(crea, cys, ualb, ucre, bmi, dep, ldl, gly), as.double),
          across(c(smo, alc, eth, inc, n18_source, eskd_source), as.factor)) %>% 
   mutate(n18_source = n18_source %>% 
            factor(level = c(20, 21, 30, 31, 40, 41, 50, 51),
