@@ -2,6 +2,13 @@ source('opeck/00_setup.R')
 source('opeck/01_expo.R')
 source('opeck/02_outc.R')
 
+
+system("dx download '/Datasets/Working data/opeck_e3.rds'")
+opeck_e3 <- readRDS('opeck_e3.rds')
+
+system("dx download 'Datasets/Working data/opeck_o2.rds'")
+opeck_o2 <- readRDS('opeck_e2.rds')
+
 expo <- c("vapo",
           "gas",
           "dust",
@@ -17,9 +24,6 @@ expo <- c("vapo",
           "vgdf", 
           "vgdffm")
 
-dd <- datadist(opeck_a1 %>% 
-                 select(expo, age, sex, year_enrol, smo, bmi, alc, dep, eth, qua, inc))
-options(datadist = "dd")
 
 # 03_00 LONGITUDINAL ANALYSES OF INCIDENT CKD ----------------------------------
 opeck_a1 <- left_join(
@@ -41,6 +45,10 @@ opeck_a1 <- left_join(
     time = as.integer(time),
     year_enrol = year(date_enrol)
   )
+
+dd_a1 <- datadist(opeck_a1 %>% 
+                 select(expo, age, sex, year_enrol, smo, bmi, alc, dep, eth, qua, inc))
+options(datadist = "dd_a1")
 
 surv_a1 <- Surv(
   time = opeck_a1$time,
@@ -102,14 +110,14 @@ fit_a1_m4 <- map(
   )
 )
 
-opeck_res_a1x <- 
+opeck_res_a1 <- 
   map2(
     list(
       map(fit_a1_m0, broom::tidy) %>% bind_rows,
       map(fit_a1_m1, broom::tidy) %>% bind_rows,
       map(fit_a1_m2, broom::tidy) %>% bind_rows,
       map(fit_a1_m3, broom::tidy) %>% bind_rows,
-      map(fit_a1_m4, broom::tidy) %>% bind_rows,
+      map(fit_a1_m4, broom::tidy) %>% bind_rows
     ),
     0:4,
     \(x, y) bind_rows(x) %>% 
@@ -153,6 +161,10 @@ opeck_a2 <- left_join(
     time = as.integer(time),
     year_enrol = year(date_enrol)
   )
+
+dd_a2 <- datadist(opeck_a2 %>% 
+                 select(expo, age, sex, year_enrol, smo, bmi, alc, dep, eth, qua, inc))
+options(datadist = "dd_a2")
 
 surv_a2 <- Surv(
   time = opeck_a2$time,
@@ -253,9 +265,13 @@ opeck_a3 <- left_join(
 ) %>%  
   filter(is.na(n07))
 
+dd_a3 <- datadist(opeck_a3 %>% 
+                 select(expo, age, sex, smo, bmi, alc, dep, eth, qua, inc))
+options(datadist = "dd_a3")
+
 fit_a3_m0 <- map(
   expo,
-  \(x) lm(
+  \(x) rms::ols(
     as.formula(paste0('log(egfr) ~ ', 
                       x)),
     data = opeck_a3
@@ -264,7 +280,7 @@ fit_a3_m0 <- map(
 
 fit_a3_m1 <- map(
   expo,
-  \(x) lm(
+  \(x) rms::ols(
     as.formula(paste0('log(egfr) ~ ', 
                       x, 
                       ' + rcs(age, 3) + sex')),
@@ -274,7 +290,7 @@ fit_a3_m1 <- map(
 
 fit_a3_m2 <- map(
   expo,
-  \(x) lm(
+  \(x) rms::ols(
     as.formula(paste0('log(egfr) ~ ', 
                       x, 
                       ' + rcs(age, 3) + sex',
@@ -285,7 +301,7 @@ fit_a3_m2 <- map(
 
 fit_a3_m3 <- map(
   expo,
-  \(x) lm(
+  \(x) rms::ols(
     as.formula(paste0('log(egfr) ~ ', 
                       x, 
                       ' + rcs(age, 3) + sex',
@@ -297,7 +313,7 @@ fit_a3_m3 <- map(
 
 fit_a3_m4 <- map(
   expo,
-  \(x) lm(
+  \(x) rms::ols(
     as.formula(paste0('log(egfr) ~ ', 
                       x, 
                       ' + rcs(age, 3) + sex',
@@ -346,6 +362,10 @@ opeck_a4 <- left_join(
   by = 'opeck_id'
 ) %>%  
   filter(is.na(n07))
+
+dd_a4 <- datadist(opeck_a4 %>% 
+                 select(expo, age, sex, year_enrol, smo, bmi, alc, dep, eth, qua, inc))
+options(datadist = "dd_a4")
 
 fit_a4_m0 <- map(
   expo,
@@ -441,53 +461,62 @@ opeck_a5 <- left_join(
 ) %>%  
   filter(is.na(n07))
 
+dd_a5 <- datadist(opeck_a5 %>% 
+                    select(expo, age, sex, smo, bmi, alc, dep, eth, qua, inc))
+options(datadist = "dd_a5")
+
 fit_a5_m0 <- map(
   expo,
-  \(x) lm(as.formula(paste0('log(uacr) ~ ', 
+  \(x) rms::ols(
+    as.formula(paste0('log(uacr) ~ ', 
                             x)),
-          data = opeck_a5
+    data = opeck_a5
   )
 )
 
 fit_a5_m1 <- map(
   expo,
-  \(x) lm(as.formula(paste0('log(uacr) ~ ', 
+  \(x) rms::ols(
+    as.formula(paste0('log(uacr) ~ ', 
                             x, 
                             ' + rcs(age, 3) + sex')),
-          data = opeck_a5
+    data = opeck_a5
   )
 )
 
 fit_a5_m2 <- map(
   expo,
-  \(x) lm(as.formula(paste0('log(uacr) ~ ', 
-                            x, 
-                            ' + rcs(age, 3) + sex',
-                            ' + smo + rcs(bmi,3) + alc')),
-          data = opeck_a5
+  \(x) rms::ols(
+    as.formula(paste0('log(uacr) ~ ', 
+                      x, 
+                      ' + rcs(age, 3) + sex',
+                      ' + smo + rcs(bmi,3) + alc')),
+    data = opeck_a5
   )
 )
 
 fit_a5_m3 <- map(
   expo,
-  \(x) lm(as.formula(paste0('log(uacr) ~ ', 
-                            x, 
-                            ' + rcs(age, 3) + sex',
-                            ' + smo + rcs(bmi,3) + alc',
-                            ' + rcs(dep,3) + eth + rcs(qua,3) + inc')),
-          data = opeck_a5
+  \(x) rms::ols(
+    as.formula(paste0('log(uacr) ~ ', 
+                      x, 
+                      ' + rcs(age, 3) + sex',
+                      ' + smo + rcs(bmi,3) + alc',
+                      ' + rcs(dep,3) + eth + rcs(qua,3) + inc')),
+    data = opeck_a5
   )
 )
 
 fit_a5_m4 <- map(
   expo,
-  \(x) lm(as.formula(paste0('log(uacr) ~ ', 
-                            x, 
-                            ' + rcs(age, 3) + sex',
-                            ' + smo + rcs(bmi,3) + alc',
-                            ' + rcs(dep,3) + eth + rcs(qua,3) + inc',
-                            ' + rcs(ldl,3) + rcs(gly,3) + dia + hpt')),
-          data = opeck_a5
+  \(x) rms::ols(
+    as.formula(paste0('log(uacr) ~ ', 
+                      x, 
+                      ' + rcs(age, 3) + sex',
+                      ' + smo + rcs(bmi,3) + alc',
+                      ' + rcs(dep,3) + eth + rcs(qua,3) + inc',
+                      ' + rcs(ldl,3) + rcs(gly,3) + dia + hpt')),
+    data = opeck_a5
   )
 )
 
@@ -529,6 +558,10 @@ opeck_a6 <- left_join(
   by = 'opeck_id'
 ) %>%  
   filter(is.na(n07))
+
+dd_a6 <- datadist(opeck_a6 %>% 
+                    select(expo, age, sex, year_enrol, smo, bmi, alc, dep, eth, qua, inc))
+options(datadist = "dd_a6")
 
 fit_a6_m0 <- map(
   expo,
